@@ -11,7 +11,6 @@
             margin: 0;
             padding: 0;
         }
-
         body, html {
             width: 100%;
             height: 100%;
@@ -31,7 +30,7 @@
             z-index: 1;
         }
 
-        /* 2. The Overlay Bar */
+        /* 2. The Overlay Bar (4 Equal Quarters) */
         .info-bar {
             position: absolute;
             bottom: 0;
@@ -39,152 +38,137 @@
             width: 100%;
             height: 10%;
             z-index: 10;
-            
             background-color: rgba(166, 25, 46, 0.9);
             color: #e0e0e0;
-            
             display: flex;
-            justify-content: space-between;
             align-items: center;
             padding: 0 2rem;
-            
             box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
         }
 
-        /* --- DATE SETTINGS --- */
-        .date-display {
+        /* Shared Quarter Column Styling */
+        .bar-quarter {
             flex: 1;
-            text-align: left;
-            font-family: "Segoe UI", sans-serif;
-            /* Flex column to stack Day and Date */
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-        
-        .day-line {
-            font-size: 3.5vh; /* Larger for the Day Name */
-            font-weight: 800; /* Bold */
-            line-height: 1.1;
+            height: 100%;
+            font-family: "Segoe UI", sans-serif;
         }
 
+        /* --- QUARTER 1: DATE --- */
+        .date-display {
+            align-items: flex-start;
+            text-align: left;
+        }
+        .day-line {
+            font-size: 3.5vh;
+            font-weight: 800;
+            line-height: 1.1;
+        }
         .date-line {
-            font-size: 2.5vh; /* Smaller for the specific date */
+            font-size: 2.3vh;
             font-weight: 400;
             opacity: 0.9;
         }
 
-        /* --- CENTER WIDGET (Weather + QR) --- */
-        .center-widget {
-            flex: 2; /* Give more space to the center if needed */
-            display: flex;
-            justify-content: center;
+        /* --- QUARTER 2: WEATHER --- */
+        .weather-display {
             align-items: center;
-            gap: 2rem; /* Space between weather and QR */
-            height: 100%;
-        }
-
-        .weather-info {
             text-align: center;
-            font-family: "Segoe UI", sans-serif;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .weather-temp {
-            font-size: 4vh;
-            font-weight: bold;
-            line-height: 1;
+            font-size: 3.8vh;
+            font-weight: 700;
+            line-height: 1.05;
         }
-
         .weather-condition {
             font-size: 2vh;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            opacity: 0.8;
-            max-width: 250px; /* Prevent long descriptions from breaking layout */
+            opacity: 0.85;
+            max-width: 240px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .qr-container {
-            height: 80%; /* Fit within the bar */
-            aspect-ratio: 1/1;
-            background-color: white; /* QR codes need white background */
-            padding: 4px;
-            border-radius: 4px;
-            display: none;
-            justify-content: center;
+        /* --- QUARTER 3: BELL SCHEDULE --- */
+        .schedule-display {
             align-items: center;
-            /* Make it look clickable */
-            cursor: pointer;
-            transition: transform 0.1s ease;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        .qr-container:active {
-            transform: scale(0.95);
+        .period-name {
+            font-size: 3.5vh;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .period-remaining {
+            font-size: 2.2vh;
+            font-weight: 400;
+            opacity: 0.9;
         }
 
-        .qr-container img {
-            height: 100%;
-            width: 100%;
-            object-fit: contain;
-        }
-
-        /* --- TIME SETTINGS --- */
+        /* --- QUARTER 4: TIME --- */
         .time-display {
-            flex: 1;
+            align-items: flex-end;
             text-align: right;
-            font-family: "Segoe UI", sans-serif; 
-            font-size: 5vh;
-            font-weight: 500;
+            font-size: 4.8vh;
+            font-weight: 600;
             font-variant-numeric: tabular-nums;
             line-height: 1;
-            color: #e0e0e0; 
+            color: #e0e0e0;
         }
 
+        /* Hidden QR Container (kept for JS music toggle compatibility) */
+        .qr-container {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <!-- 1. The Google Slides Embed -->
-    <!-- src is empty by default, populated by JS -->
-    <iframe 
-        id="slide-frame"
-        class="presentation-frame"
-        src="" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        mozallowfullscreen="true" 
-        webkitallowfullscreen="true">
+    <iframe id="slide-frame"
+            class="presentation-frame"
+            src=""
+            frameborder="0"
+            allowfullscreen="true"
+            mozallowfullscreen="true"
+            webkitallowfullscreen="true">
     </iframe>
 
-    <!-- 2. The Bottom Overlay Bar -->
+    <!-- 2. The Bottom Overlay Bar (4 Quarters) -->
     <div class="info-bar">
-        <!-- LEFT: Date Stack -->
-        <div class="date-display">
+        <!-- QUARTER 1: Date -->
+        <div class="bar-quarter date-display">
             <div id="day-line" class="day-line">Loading...</div>
             <div id="date-line" class="date-line">...</div>
         </div>
-        
-        <!-- CENTER: Weather + QR Widget -->
-        <div class="center-widget">
-            <div class="weather-info">
-                <div class="weather-temp" id="weather-temp">--°F</div>
-                <div class="weather-condition" id="weather-desc">Checking Weather...</div>
-            </div>
-            <div class="qr-container" title="Click to Toggle Music">
-                <!-- Placeholder QR Code pointing to Google -->
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://yourwebserver.org" alt="Scan Me">
-            </div>
+
+        <!-- QUARTER 2: Weather -->
+        <div class="bar-quarter weather-display">
+            <div class="weather-temp" id="weather-temp">--°F</div>
+            <div class="weather-condition" id="weather-desc">Checking Weather...</div>
         </div>
-        
-        <!-- RIGHT: Time -->
-        <div class="time-display" id="time-container">
+
+        <!-- QUARTER 3: Bell Schedule & Time Left -->
+        <div class="bar-quarter schedule-display">
+            <div class="period-name" id="period-name">Schedule</div>
+            <div class="period-remaining" id="period-remaining">--</div>
+        </div>
+
+        <!-- QUARTER 4: Time -->
+        <div class="bar-quarter time-display" id="time-container">
             --:--:--
         </div>
+
+        <div class="qr-container" title="Click to Toggle Music"></div>
     </div>
 
-    <!-- Script to handle live Date/Time updates -->
     <script>
         // --- Configuration & URL Parsing ---
         function getQueryParam(param, defaultValue) {
@@ -203,23 +187,110 @@
         const iframeEl = document.getElementById('slide-frame');
         iframeEl.src = frameSrc;
 
-        // --- Clock Logic ---
+// --- Deshler Bell Schedules (Edit times in 24-hour HH:MM format) ---
+        const monThuSchedule = [
+            { name: "1st Period", start: "07:50", end: "08:55" },
+            { name: "2nd Period", start: "08:58", end: "10:03" },
+            { name: "3rd Period", start: "10:06", end: "11:11" },
+            {
+                name: "4th Period",
+                start: "11:14",
+                end: "12:44",
+                lunches: [
+                    { name: "A Lunch", start: "11:17", end: "11:44" },
+                    { name: "B Lunch", start: "11:46", end: "12:14" },
+                    { name: "C Lunch", start: "12:16", end: "12:44" }
+                ]
+            },
+            { name: "5th Period", start: "12:47", end: "13:52" },
+            { name: "6th Period", start: "13:55", end: "15:00" }
+        ];
+
+        const fridaySchedule = [
+            { name: "1st Period", start: "07:50", end: "08:55" },
+            { name: "2nd Period", start: "08:58", end: "09:54" },
+            { name: "3rd Period", start: "09:57", end: "10:53" },
+            {
+                name: "4th Period",
+                start: "10:56",
+                end: "12:25",
+                lunches: [
+                    { name: "A Lunch", start: "10:59", end: "11:25" },
+                    { name: "B Lunch", start: "11:27", end: "11:55" },
+                    { name: "C Lunch", start: "11:57", end: "12:25" }
+                ]
+            },
+            { name: "REACH Period", start: "12:28", end: "13:02" },
+            { name: "5th Period", start: "13:05", end: "14:01" },
+            { name: "6th Period", start: "14:04", end: "15:00" }
+        ];
+
+        function getBellStatus(now) {
+            const day = now.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
+            if (day === 0 || day === 6) {
+                return { title: "Weekend", sub: "No Classes" };
+            }
+
+            // Use Friday schedule on Fridays (day === 5), otherwise Mon-Thu schedule
+            const activeSchedule = (day === 5) ? fridaySchedule : monThuSchedule;
+
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+            const toMins = (t) => {
+                const [h, m] = t.split(':').map(Number);
+                return h * 60 + m;
+            };
+
+            const firstStart = toMins(activeSchedule[0].start);
+            const lastEnd = toMins(activeSchedule[activeSchedule.length - 1].end);
+
+            if (currentMins < firstStart) {
+                const diff = firstStart - currentMins;
+                return {
+                    title: "Before School",
+                    sub: diff <= 60 ? `1st Period in ${diff}m` : "Welcome"
+                };
+            }
+            if (currentMins >= lastEnd) {
+                return { title: "After School", sub: "Dismissed" };
+            }
+
+            for (let i = 0; i < activeSchedule.length; i++) {
+                const start = toMins(activeSchedule[i].start);
+                const end = toMins(activeSchedule[i].end);
+
+                if (currentMins >= start && currentMins < end) {
+                    const minsLeft = end - currentMins;
+                    return {
+                        title: activeSchedule[i].name,
+                        sub: `${minsLeft} min left`
+                    };
+                }
+                if (i < activeSchedule.length - 1) {
+                    const nextStart = toMins(activeSchedule[i + 1].start);
+                    if (currentMins >= end && currentMins < nextStart) {
+                        const minsLeft = nextStart - currentMins;
+                        return {
+                            title: "Class Change",
+                            sub: `${minsLeft} min left`
+                        };
+                    }
+                }
+            }
+            return { title: "", sub: "" };
+        }
+
+        // --- Clock & Schedule Logic ---
         function updateClock() {
             const now = new Date();
             const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
-            const dateRest = new Intl.DateTimeFormat('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            }).format(now);
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
+            const dateRest = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(now);
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const scheduleStatus = getBellStatus(now);
 
             document.getElementById('day-line').textContent = dayName;
             document.getElementById('date-line').textContent = dateRest;
+            document.getElementById('period-name').textContent = scheduleStatus.title;
+            document.getElementById('period-remaining').textContent = scheduleStatus.sub;
             document.getElementById('time-container').textContent = timeString;
         }
 
@@ -230,8 +301,8 @@
                     headers: {
                         'User-Agent': 'KioskDisplay/1.0 (techsupport@yourwebserver.org)',
                         'Accept': 'application/geo+json'
-                }
-            });
+                    }
+                });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 const props = data.properties;
@@ -244,10 +315,8 @@
                 }
 
                 let descText = props.textDescription || "Local Weather";
-
                 document.getElementById('weather-temp').textContent = tempText;
                 document.getElementById('weather-desc').textContent = descText;
-
             } catch (error) {
                 console.error("Weather fetch failed:", error);
             }
@@ -260,7 +329,6 @@
             let currentTrackIndex = 0;
             const audio = new Audio();
 
-            // Fisher-Yates Shuffle
             function shuffle(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -268,87 +336,63 @@
                 }
             }
 
-            // Play specific track
             function playTrack() {
                 if (currentTrackIndex >= playlist.length) {
-                    // Reshuffle and restart if we played everything
                     shuffle(playlist);
                     currentTrackIndex = 0;
                 }
-
                 const trackNumber = playlist[currentTrackIndex];
                 const trackPath = `music/${trackNumber}.mp3`;
-                
                 audio.src = trackPath;
-                
                 const playPromise = audio.play();
                 if (playPromise !== undefined) {
                     playPromise.catch(e => {
-                        console.warn("Autoplay was prevented. Click the QR code to start music.", e);
+                        console.warn("Autoplay was prevented.", e);
                     });
                 }
-
-                // Increment for next time
                 currentTrackIndex++;
             }
 
-            // Event listener for when song ends
             audio.addEventListener('ended', () => {
-                // Wait 1 second before playing next
                 setTimeout(() => {
                     playTrack();
                 }, 1000);
             });
 
-            // --- CLICK TRIGGER (Hotspot) ---
             const qrTrigger = document.querySelector('.qr-container');
             qrTrigger.addEventListener('click', () => {
                 if (audio.paused) {
-                    // If audio was blocked or paused, resume/play
-                    // If src is set (which it is from init), just play
                     audio.play();
                 } else {
-                    // If playing, pause it
                     audio.pause();
                 }
             });
 
-            // Start Initial Play
             shuffle(playlist);
             playTrack();
         }
 
         // --- Initialization ---
-        
-        // Start Clock & Weather
         updateClock();
         updateWeather();
         setInterval(updateClock, 1000);
         setInterval(updateWeather, 900000); // 15 mins
 
-        // Start Audio if enabled
         if (enableMusic) {
-            // Using window.onload to ensure best chance for autoplay permissions
             window.addEventListener('load', initAudioPlayer);
         }
 
         // --- Refresh Logic ---
-
-        // 1. Iframe Refresh (Soft Refresh) - Uses the 'refresh' URL param (default 5 mins)
-        // This keeps the music playing while updating the slides
         setInterval(() => {
             console.log("Refreshing Iframe...");
             iframeEl.src = iframeEl.src;
         }, refreshInterval);
 
-        // 2. Window Hard Refresh (Hard Refresh) - Fixed at 24 hours
-        // This ensures the browser memory is cleared and app is stable long-term
         const twentyFourHours = 24 * 60 * 60 * 1000;
         setTimeout(() => {
             console.log("Performing Daily Hard Refresh...");
             window.location.reload(true);
         }, twentyFourHours);
-
     </script>
 </body>
 </html>
