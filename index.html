@@ -74,10 +74,22 @@
 
         /* --- QUARTER 2: WEATHER --- */
         .weather-display {
+            flex-direction: row;
             align-items: center;
-            text-align: center;
+            justify-content: center;
+            gap: 1rem;
             border-left: 1px solid rgba(255, 255, 255, 0.2);
             border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .weather-icon {
+            font-size: 5.2vh;
+            line-height: 1;
+        }
+        .weather-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
         }
         .weather-temp {
             font-size: 3.8vh;
@@ -151,8 +163,11 @@
 
         <!-- QUARTER 2: Weather -->
         <div class="bar-quarter weather-display">
-            <div class="weather-temp" id="weather-temp">--°F</div>
-            <div class="weather-condition" id="weather-desc">Checking Weather...</div>
+            <div class="weather-icon" id="weather-icon">🌤️</div>
+            <div class="weather-text">
+                <div class="weather-temp" id="weather-temp">--°F</div>
+                <div class="weather-condition" id="weather-desc">Checking Weather...</div>
+            </div>
         </div>
 
         <!-- QUARTER 3: Bell Schedule & Time Left -->
@@ -187,7 +202,7 @@
         const iframeEl = document.getElementById('slide-frame');
         iframeEl.src = frameSrc;
 
-// --- Deshler Bell Schedules (Edit times in 24-hour HH:MM format) ---
+        // --- Deshler Bell Schedules (Edit times in 24-hour HH:MM format) ---
         const monThuSchedule = [
             { name: "1st Period", start: "07:50", end: "08:55" },
             { name: "2nd Period", start: "08:58", end: "10:03" },
@@ -255,16 +270,34 @@
             }
 
             for (let i = 0; i < activeSchedule.length; i++) {
-                const start = toMins(activeSchedule[i].start);
-                const end = toMins(activeSchedule[i].end);
+                const period = activeSchedule[i];
+                const start = toMins(period.start);
+                const end = toMins(period.end);
 
                 if (currentMins >= start && currentMins < end) {
-                    const minsLeft = end - currentMins;
+                    const periodMinsLeft = end - currentMins;
+
+                    // Check if this period has A/B/C lunch waves
+                    if (period.lunches) {
+                        for (const lunch of period.lunches) {
+                            const lStart = toMins(lunch.start);
+                            const lEnd = toMins(lunch.end);
+                            if (currentMins >= lStart && currentMins < lEnd) {
+                                const lunchMinsLeft = lEnd - currentMins;
+                                return {
+                                    title: period.name,
+                                    sub: `${lunch.name} • ${lunchMinsLeft} min left`
+                                };
+                            }
+                        }
+                    }
+
                     return {
-                        title: activeSchedule[i].name,
-                        sub: `${minsLeft} min left`
+                        title: period.name,
+                        sub: `${periodMinsLeft} min left`
                     };
                 }
+
                 if (i < activeSchedule.length - 1) {
                     const nextStart = toMins(activeSchedule[i + 1].start);
                     if (currentMins >= end && currentMins < nextStart) {
@@ -294,6 +327,26 @@
             document.getElementById('time-container').textContent = timeString;
         }
 
+        // --- Weather Icon Helper ---
+        function getWeatherIcon(desc) {
+            const d = desc.toLowerCase();
+            const hour = new Date().getHours();
+            const isNight = hour < 6 || hour >= 19;
+
+            if (d.includes('thunder') || d.includes('storm')) return '⛈️';
+            if (d.includes('snow') || d.includes('sleet') || d.includes('ice') || d.includes('freezing')) return '❄️';
+            if (d.includes('rain') || d.includes('shower') || d.includes('drizzle')) return '🌧️';
+            if (d.includes('fog') || d.includes('mist') || d.includes('haze')) return '🌫️';
+            if (d.includes('overcast') || d.includes('mostly cloudy')) return '☁️';
+            if (d.includes('partly') || d.includes('few clouds') || d.includes('scattered')) {
+                return isNight ? '☁️' : '⛅';
+            }
+            if (d.includes('clear') || d.includes('sunny') || d.includes('fair')) {
+                return isNight ? '🌙' : '☀️';
+            }
+            return isNight ? '🌙' : '🌤️';
+        }
+
         // --- Weather Function using NWS API ---
         async function updateWeather() {
             try {
@@ -317,6 +370,7 @@
                 let descText = props.textDescription || "Local Weather";
                 document.getElementById('weather-temp').textContent = tempText;
                 document.getElementById('weather-desc').textContent = descText;
+                document.getElementById('weather-icon').textContent = getWeatherIcon(descText);
             } catch (error) {
                 console.error("Weather fetch failed:", error);
             }
